@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Courier Console</title>
+
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1f2937;
+      --muted: #64748b;
+      --line: #dce4ee;
+      --surface: #fff;
+      --navy: #15233c;
+      --blue: #2563eb;
+      --success: #047857;
+      --danger: #b42318;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font: 14px/1.5 Inter, ui-sans-serif, system-ui, sans-serif;
+      color: var(--ink);
+      background: #f4f7fb;
+    }
+
+    header {
+      background: var(--navy);
+      color: #fff;
+      padding: 28px max(24px, calc((100% - 1120px) / 2));
+    }
+
+    header p {
+      margin: 5px 0 0;
+      color: #b7c6dd;
+    }
+
+    main {
+      max-width: 1120px;
+      margin: 30px auto 50px;
+      padding: 0 24px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.4fr 0.8fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 800px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 2px 10px #1725540a;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin: 0;
+    }
+
+    h2 {
+      font-size: 17px;
+      margin: 0 0 16px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .wide {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 540px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 650;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      padding: 9px 10px;
+      font: inherit;
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 160px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 7px;
+      padding: 10px 14px;
+      color: #fff;
+      background: var(--blue);
+      font: 600 14px inherit;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    button.secondary {
+      background: #e8eef7;
+      color: #334155;
+    }
+
+    button.danger {
+      background: var(--danger);
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .result {
+      margin-top: 20px;
+      background: #0f172a;
+      color: #dbeafe;
+      border-radius: 8px;
+      padding: 14px;
+      white-space: pre-wrap;
+      overflow: auto;
+      min-height: 54px;
+      font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .hint {
+      color: var(--muted);
+      margin: 0 0 14px;
+      font-size: 13px;
+    }
+
+    .status {
+      font-size: 12px;
+      color: var(--success);
+      font-weight: 650;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Courier Console</h1>
+    <p>A simple internal view for creating and managing shipments.</p>
+  </header>
+
+  <main>
+    <div class="grid">
+
+      <!-- CREATE SHIPMENT -->
+      <section class="card">
+        <h2>Create shipment</h2>
+
+        <p class="hint">
+          The default <code>mock</code> courier is safe for local testing.
+          Use UrbaneBolt only after configuring credentials.
+        </p>
+
+        <form id="order-form">
+
+          <div class="form-grid">
+
+            <div>
+              <label>Order ID</label>
+              <input
+                name="orderId"
+                value="WEB-1001"
+                required
+              >
+            </div>
+
+            <div>
+              <label>Courier</label>
+              <select name="courierPartner">
+                <option value="mock">Mock (local)</option>
+                <option value="urbanebolt">UrbaneBolt UAT</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Invoice number</label>
+              <input
+                name="invoiceNumber"
+                value="INV-WEB-1001"
+                required
+              >
+            </div>
+
+            <div>
+              <label>Invoice date</label>
+              <input
+                name="invoiceDate"
+                type="date"
+                required
+              >
+            </div>
+
+            <div class="wide">
+              <label>Item description</label>
+              <input
+                name="itemDescription"
+                value="Cotton t-shirt"
+                required
+              >
+            </div>
+
+            <div>
+              <label>Declared value (₹)</label>
+              <input
+                name="declaredValue"
+                type="number"
+                min="1"
+                value="499"
+                required
+              >
+            </div>
+
+            <div>
+              <label>Payment mode</label>
+              <select name="paymentMode">
+                <option value="PREPAID">PREPAID</option>
+                <option value="COD">COD</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Weight (kg)</label>
+              <input
+                name="weightKg"
+                type="number"
+                min="0.1"
+                step="0.1"
+                value="0.4"
+                required
+              >
+            </div>
+
+            <div>
+              <label>Quantity</label>
+              <input
+                name="itemQuantity"
+                type="number"
+                min="1"
+                value="1"
+                required
+              >
+            </div>
+
+            <div>
+              <label>Length (cm)</label>
+              <input
+                name="length"
+                type="number"
+                min="1"
+                value="20"
+                required
+              >
+            </div>
+
+            <div>
+              <label>Breadth (cm)</label>
+              <input
+                name="breadth"
+                type="number"
+                min="1"
+                value="15"
+                required
+              >
+            </div>
+
+            <div>
+              <label>Height (cm)</label>
+              <input
+                name="height"
+                type="number"
+                min="1"
+                value="5"
+                required
+              >
+            </div>
+
+          </div>
+
+          <div class="actions">
+            <button type="submit">
+              Create shipment
+            </button>
+
+            <button
+              type="button"
+              class="secondary"
+              id="fill-sample"
+            >
+              Reset sample
+            </button>
+          </div>
+
+        </form>
+
+        <pre
+          class="result"
+          id="result"
+        >Responses will appear here.</pre>
+
+      </section>
+
+      <!-- RIGHT SIDE -->
+      <aside>
+
+        <!-- MANAGE SHIPMENT -->
+        <section class="card">
+
+          <h2>Manage shipment</h2>
+
+          <label>Order ID</label>
+
+          <input
+            id="manage-id"
+            placeholder="WEB-1001"
+          >
+
+          <div class="actions">
+
+            <button
+              id="track"
+              class="secondary"
+              type="button"
+            >
+              Track
+            </button>
+
+            <button
+              id="cancel"
+              class="danger"
+              type="button"
+            >
+              Cancel
+            </button>
+
+          </div>
+
+        </section>
+
+        <!-- BULK ORDERS -->
+        <section
+          class="card"
+          style="margin-top:20px"
+        >
+
+          <h2>Bulk orders</h2>
+
+          <p class="hint">
+            Paste up to 100 normalized order objects in the API format.
+          </p>
+
+          <textarea
+            id="bulk-json"
+            placeholder='{"orders": [{...}]}'
+          ></textarea>
+
+          <div class="actions">
+
+            <button
+              id="bulk-submit"
+              type="button"
+            >
+              Submit batch
+            </button>
+
+            <button
+              id="batch-status"
+              class="secondary"
+              type="button"
+            >
+              Check batch
+            </button>
+
+          </div>
+
+          <input
+            id="batch-id"
+            placeholder="Batch ID"
+            style="margin-top:10px"
+          >
+
+        </section>
+
+        <!-- CONNECTION STATUS -->
+        <section
+          class="card"
+          style="margin-top:20px"
+        >
+
+          <span class="status">
+            ● API connected locally
+          </span>
+
+          <p
+            class="hint"
+            style="margin:9px 0 0"
+          >
+            Backend:
+            <code>http://localhost:3000</code>
+          </p>
+
+        </section>
+
+      </aside>
+
+    </div>
+  </main>
+
+  <script>
+
+    const result = document.querySelector('#result');
+    const form = document.querySelector('#order-form');
+
+    /*
+     * Address helper.
+     * IMPORTANT:
+     * Backend expects camelCase property names.
+     */
+    function address(name) {
+      return {
+        name,
+        addressLine1: '10 Market Road',
+        city: 'Gurugram',
+        state: 'Haryana',
+        pincode: '122001',
+        phone: '9876543210',
+        email: 'ops@example.test',
+        country: 'India'
+      };
+    }
+
+    /*
+     * Set today's date.
+     */
+    document.querySelector('[name="invoiceDate"]').value =
+      new Date().toISOString().slice(0, 10);
+
+    /*
+     * Display API response.
+     */
+    function show(data) {
+      result.textContent = JSON.stringify(data, null, 2);
+    }
+
+    /*
+     * Common API request helper.
+     */
+    async function call(path, options = {}) {
+
+      const response = await fetch(path, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(options.headers || {})
+        },
+        ...options
+      });
+
+      let data;
+
+      try {
+        data = await response.json();
+      } catch {
+        data = {
+          statusCode: response.status,
+          message: 'Invalid JSON response from server'
+        };
+      }
+
+      show(data);
+
+      if (!response.ok) {
+        throw data;
+      }
+
+      return data;
+    }
+
+    /*
+     * CREATE SHIPMENT
+     */
+    form.addEventListener('submit', async (event) => {
+
+      event.preventDefault();
+
+      const formData = Object.fromEntries(
+        new FormData(form)
+      );
+
+      /*
+       * IMPORTANT:
+       * This payload now uses camelCase,
+       * matching the NestJS DTO/backend.
+       */
+      const payload = {
+
+        orderId: formData.orderId,
+
+        courierPartner: formData.courierPartner,
+
+        invoiceNumber: formData.invoiceNumber,
+
+        invoiceDate: formData.invoiceDate,
+
+        itemDescription: formData.itemDescription,
+
+        declaredValue: Number(
+          formData.declaredValue
+        ),
+
+        collectableValue:
+          formData.paymentMode === 'COD'
+            ? Number(formData.declaredValue)
+            : 0,
+
+        paymentMode: formData.paymentMode,
+
+        weightKg: Number(
+          formData.weightKg
+        ),
+
+        itemQuantity: Number(
+          formData.itemQuantity
+        ),
+
+        dimensionsCm: {
+          length: Number(formData.length),
+          breadth: Number(formData.breadth),
+          height: Number(formData.height)
+        },
+
+        shipper: address('Acme Store'),
+
+        consignee: address('Riya Shah'),
+
+        returnAddress: address('Acme Returns')
+      };
+
+      console.log(
+        'Create shipment payload:',
+        payload
+      );
+
+      try {
+
+        const data = await call(
+          '/api/v1/orders',
+          {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          }
+        );
+
+        /*
+         * Backend returns:
+         * { data: {...} }
+         */
+        if (data.data?.orderId) {
+          document.querySelector(
+            '#manage-id'
+          ).value = data.data.orderId;
+        }
+
+      } catch (error) {
+
+        console.error(
+          'Create shipment failed:',
+          error
+        );
+
+      }
+
+    });
+
+    /*
+     * RESET SAMPLE
+     */
+    document.querySelector(
+      '#fill-sample'
+    ).onclick = () => {
+
+      form.reset();
+
+      document.querySelector(
+        '[name="orderId"]'
+      ).value = 'WEB-1001';
+
+      document.querySelector(
+        '[name="courierPartner"]'
+      ).value = 'mock';
+
+      document.querySelector(
+        '[name="invoiceNumber"]'
+      ).value = 'INV-WEB-1001';
+
+      document.querySelector(
+        '[name="invoiceDate"]'
+      ).value = new Date()
+        .toISOString()
+        .slice(0, 10);
+
+      document.querySelector(
+        '[name="itemDescription"]'
+      ).value = 'Cotton t-shirt';
+
+      document.querySelector(
+        '[name="declaredValue"]'
+      ).value = 499;
+
+      document.querySelector(
+        '[name="paymentMode"]'
+      ).value = 'PREPAID';
+
+      document.querySelector(
+        '[name="weightKg"]'
+      ).value = 0.4;
+
+      document.querySelector(
+        '[name="itemQuantity"]'
+      ).value = 1;
+
+      document.querySelector(
+        '[name="length"]'
+      ).value = 20;
+
+      document.querySelector(
+        '[name="breadth"]'
+      ).value = 15;
+
+      document.querySelector(
+        '[name="height"]'
+      ).value = 5;
+
+      document.querySelector(
+        '#manage-id'
+      ).value = 'WEB-1001';
+
+      result.textContent =
+        'Responses will appear here.';
+    };
+
+    /*
+     * TRACK SHIPMENT
+     */
+    document.querySelector(
+      '#track'
+    ).onclick = async () => {
+
+      const orderId =
+        document.querySelector(
+          '#manage-id'
+        ).value.trim();
+
+      if (!orderId) {
+        show({
+          message: 'Please enter an Order ID.'
+        });
+        return;
+      }
+
+      try {
+
+        await call(
+          `/api/v1/orders/${encodeURIComponent(orderId)}/track`
+        );
+
+      } catch (_) {}
+
+    };
+
+    /*
+     * CANCEL SHIPMENT
+     */
+    document.querySelector(
+      '#cancel'
+    ).onclick = async () => {
+
+      const orderId =
+        document.querySelector(
+          '#manage-id'
+        ).value.trim();
+
+      if (!orderId) {
+        show({
+          message: 'Please enter an Order ID.'
+        });
+        return;
+      }
+
+      try {
+
+        await call(
+          `/api/v1/orders/${encodeURIComponent(orderId)}/cancel`,
+          {
+            method: 'POST'
+          }
+        );
+
+      } catch (_) {}
+
+    };
+
+    /*
+     * SUBMIT BULK ORDERS
+     */
+    document.querySelector(
+      '#bulk-submit'
+    ).onclick = async () => {
+
+      const raw =
+        document.querySelector(
+          '#bulk-json'
+        ).value.trim();
+
+      if (!raw) {
+
+        show({
+          message: 'Please enter bulk order JSON.'
+        });
+
+        return;
+      }
+
+      try {
+
+        /*
+         * Validate JSON before sending.
+         */
+        const payload = JSON.parse(raw);
+
+        if (
+          !payload.orders ||
+          !Array.isArray(payload.orders)
+        ) {
+
+          throw new Error(
+            'Bulk payload must contain an orders array.'
+          );
+
+        }
+
+        const data = await call(
+          '/api/v1/orders/bulk',
+          {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          }
+        );
+
+        if (data.data?.batchId) {
+
+          document.querySelector(
+            '#batch-id'
+          ).value = data.data.batchId;
+
+        }
+
+      } catch (error) {
+
+        show({
+          message:
+            error instanceof Error
+              ? error.message
+              : error
+        });
+
+      }
+
+    };
+
+    /*
+     * CHECK BATCH STATUS
+     */
+    document.querySelector(
+      '#batch-status'
+    ).onclick = async () => {
+
+      const batchId =
+        document.querySelector(
+          '#batch-id'
+        ).value.trim();
+
+      if (!batchId) {
+
+        show({
+          message: 'Please enter a Batch ID.'
+        });
+
+        return;
+      }
+
+      try {
+
+        await call(
+          `/api/v1/batches/${encodeURIComponent(batchId)}`
+        );
+
+      } catch (_) {}
+
+    };
+
+  </script>
+
+</body>
+</html>
